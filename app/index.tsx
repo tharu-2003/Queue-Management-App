@@ -21,7 +21,7 @@ const App = () => {
         return <Redirect href={"/home"}/>
         
     } else {
-        return <Redirect href={"/login"}/>
+        return <Redirect href={"/welcomePage"}/>
     }
 };
 

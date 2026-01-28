@@ -7,10 +7,16 @@ const AuthLayout = () => {
     return(
         <Stack 
             screenOptions={{
-                headerShown: true,
+                headerShown: false,
                 animation: "ios_from_right"
             }}
         >
+            <Stack.Screen 
+                name="welcome" 
+                options={{
+                    title: "Welcome"
+                }}
+            />
 
             <Stack.Screen 
                 name="login" 
