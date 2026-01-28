@@ -20,17 +20,6 @@ export const AuthProvider = ({ children } : { children: ReactNode }) => {
 
     const { showLoader, hideLoader, isLoading } = useLoader()
     const [user, setUser] = useState<User | null>(null)
-    
-    // useEffect(() => {
-    //     showLoader()
-    //     const unscribe = onAuthStateChanged(auth, (user) =>{ 
-    //     // onAuthStateChanged -> Database eka diha balagena idala change ekak wuna gaman trigger wenawa . meka listner ekak.
-    //         setUser(user)
-
-    //         hideLoader()
-    //     })
-    //     return () => unscribe() // return eka call karanakota listen karan inna eka off wenawa
-    // }, [])
 
     useEffect(() => {
     showLoader();
@@ -45,12 +34,16 @@ export const AuthProvider = ({ children } : { children: ReactNode }) => {
                 const userData = docSnap.data();
                 
                 setUser({
-                ...currentUser,
-                displayName: userData.name || currentUser.displayName,
-                photoURL: userData.image || currentUser.photoURL, 
+                    ...currentUser,
+                    displayName: currentUser.displayName,
+                    photoURL: currentUser.photoURL, 
                 } as any);
+
+                hideLoader()
             } else {
                 setUser(currentUser);
+
+                hideLoader()
             }
             } catch (error) {
             console.log("Error fetching user doc: ", error);
