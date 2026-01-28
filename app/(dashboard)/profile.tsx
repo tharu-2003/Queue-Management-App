@@ -103,7 +103,7 @@ const Profile = () => {
 
     return (
         // <SafeAreaView style={{ flex: 1, backgroundColor: '#F9FAFB' }} edges={['top']}>
-            <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+            <ScrollView className="flex-1 bg-blue-50 bottom-20" showsVerticalScrollIndicator={false}>
                 {/* Header Gradient Background */}
                 <View className="relative">
                     <View className="h-40 bg-gradient-to-br from-indigo-600 to-purple-600">
