@@ -1,7 +1,7 @@
 // tokenService.ts
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth, db } from "./firebase";
-import { collection, addDoc, query, where, getDocs, doc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, query, where, getDocs, doc, updateDoc , orderBy} from "firebase/firestore";
 
 /**
  * Token Data Type
@@ -103,4 +103,20 @@ export const expireToken = async (tokenId: string) => {
   if (!tokenId) return;
   const tokenRef = doc(db, "tokens", tokenId);
   await updateDoc(tokenRef, { status: "expired" });
+};
+
+export const getTokenHistory = async (): Promise<TokenData[]> => {
+  const user = auth.currentUser;
+  if (!user) return [];
+
+  const tokensRef = collection(db, "tokens");
+  const q = query(tokensRef, where("userId", "==", user.uid), orderBy("createdAt", "desc"));
+
+  const snapshot = await getDocs(q);
+
+  const history: TokenData[] = snapshot.docs
+    .map(doc => ({ id: doc.id, ...(doc.data() as TokenData) }))
+    .filter(token => token.status !== "active"); // filter active tokens here
+
+  return history;
 };
