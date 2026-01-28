@@ -1,8 +1,9 @@
-import { View, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ImageBackground, Keyboard, Alert, TouchableWithoutFeedback } from "react-native";
 import React, { useState } from "react";
 import { Link, useRouter } from "expo-router";
 import { registerUser } from "@/services/authService";
 import { useLoader } from "@/hooks/useLoader";
+import { Ionicons } from '@expo/vector-icons';
 
 const Register = () => {
 
@@ -23,22 +24,22 @@ const Register = () => {
     }
 
     if(!name || !email || !password){
-        Alert.alert("please fill all the fields..!")
+        Alert.alert("Please fill all the fields!")
         return
     }
 
     if(password !== comformPassword){
-        Alert.alert("Password Do not match..!")
+        Alert.alert("Password Do not match!")
         return
     }
 
     try {
         showLoader()
         await registerUser(name, email, password)
-        Alert.alert("Acount created..!")
+        Alert.alert("Account created!")
         router.replace("/login")
     } catch (error) {
-        Alert.alert("Register failed..!")
+        Alert.alert("Register failed!")
     } finally{
         hideLoader()
     }
@@ -47,77 +48,98 @@ const Register = () => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard?.dismiss}>
-        <View className="flex-1 bg-gray-100 px-6 justify-center items-center">
+      <ImageBackground
+        source={{ uri: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80' }}
+        className="flex-1"
+        resizeMode="cover"
+      >
+        {/* Overlay */}
+        <View className="flex-1 bg-black/40 justify-center items-center px-6">
 
-        <Text className="text-4xl font-bold text-gray-900">
-            Create Account ✨
-        </Text>
+          <Text className="text-4xl font-bold text-white mb-12">
+            Create an Account
+          </Text>
 
-        <Text className="text-gray-500 mb-8">
-            Register to get started
-        </Text>
+          {/* Name Input */}
+          <View className="w-full bg-white/45 rounded-full px-5 py-2 mb-4 flex-row items-center">
+            <Ionicons name="person-outline" size={20} color="gray" />
+            <TextInput
+              placeholder="Full Name"
+              placeholderTextColor="gray"
+              value={name}
+              onChangeText={setName}
+              className="flex-1 ml-3 text-gray-800"
+            />
+          </View>
 
-        <TextInput
-            placeholder="Full Name"
-            placeholderTextColor="#888"
-            value={name}
-            onChangeText={setName}
-            className="w-full bg-white p-4 rounded-2xl mb-4 border border-gray-300"
-        />
+          {/* Email Input */}
+          <View className="w-full bg-white/45 rounded-full px-5 py-2 mb-4 flex-row items-center">
+            <Ionicons name="mail-outline" size={20} color="gray" />
+            <TextInput
+              placeholder="Email"
+              placeholderTextColor="gray"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              className="flex-1 ml-3 text-gray-800"
+            />
+          </View>
 
-        <TextInput
-            placeholder="Email"
-            placeholderTextColor="#888"
-            value={email}
-            onChangeText={setEmail}
-            className="w-full bg-white p-4 rounded-2xl mb-4 border border-gray-300"
-        />
+          {/* Password Input */}
+          <View className="w-full bg-white/45 rounded-full px-5 py-2 mb-4 flex-row items-center">
+            <Ionicons name="lock-closed-outline" size={20} color="gray" />
+            <TextInput
+              placeholder="Password"
+              placeholderTextColor="gray"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+              className="flex-1 ml-3 text-gray-800"
+            />
+          </View>
 
-        <TextInput
-            placeholder="Password"
-            placeholderTextColor="#888"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-            className="w-full bg-white p-4 rounded-2xl mb-4 border border-gray-300"
-        />
+          {/* Confirm Password Input */}
+          <View className="w-full bg-white/45 rounded-full px-5 py-2 mb-6 flex-row items-center">
+            <Ionicons name="lock-closed-outline" size={20} color="gray" />
+            <TextInput
+              placeholder="Confirm Password"
+              placeholderTextColor="gray"
+              secureTextEntry
+              value={comformPassword}
+              onChangeText={setComformPassword}
+              className="flex-1 ml-3 text-gray-800"
+            />
+          </View>
 
-        <TextInput
-            placeholder="Comform Password"
-            placeholderTextColor="#888"
-            secureTextEntry
-            value={comformPassword}
-            onChangeText={setComformPassword}
-            className="w-full bg-white p-4 rounded-2xl mb-4 border border-gray-300"
-        />
-
-        <TouchableOpacity 
+          {/* Create Button */}
+          <TouchableOpacity 
             onPress={handleRegister}
-            className="w-full bg-indigo-600 p-4 rounded-2xl mt-2">
-                
-            <Text className="text-white text-center font-semibold text-lg">
-            Register
+            className="w-full bg-blue-400 rounded-3xl py-2 mb-2 border border-white/30 overflow-hidden"
+            activeOpacity={0.7}
+            >
+            <Text className="text-white text-center font-semibold text-lg tracking-wider">
+                CREATE
             </Text>
-        </TouchableOpacity>
+          </TouchableOpacity>
 
-        <View className="w-full flex-row justify-center mt-4">
-            <Text className="text-gray-600 mt-4">
-                Already have an account?{" "}
-                <TouchableOpacity 
-                    onPress={
-                        () => {
-                            // router.push("/login")
-                            // router.replace("/login")
-                            router.back()
-                        }
-                    }>
-                    <Text className="text-indigo-600 font-bold"> Login </Text>
-                </TouchableOpacity>
+          {/* Login Link */}
+          <View className="flex-row items-center">
+            <Text className="text-white">
+              Don't you have an existing account?{" "}
             </Text>
-        </View>
+            <TouchableOpacity 
+              onPress={() => router.push("/login")}
+            >
+              <Text className="text-white font-bold text-sm underline">
+                Log in
+              </Text>
+            </TouchableOpacity>
+          </View>
 
         </View>
-    </ TouchableWithoutFeedback>
+      </ImageBackground>
+    </TouchableWithoutFeedback>
   );
 };
 
