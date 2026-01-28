@@ -1,83 +1,127 @@
-import { View, Text, TextInput, Pressable, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ImageBackground, Keyboard, Alert, TouchableWithoutFeedback, KeyboardAvoidingView, Platform } from "react-native";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import { useLoader } from "@/hooks/useLoader";
 import { login } from "@/services/authService";
+import { Ionicons } from '@expo/vector-icons';
 
-const Loging = () => {
-
-  const { showLoader, hideLoader, isLoading } = useLoader()
+const Login = () => {
+  const { showLoader, hideLoader, isLoading } = useLoader();
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  
   const router = useRouter();
 
-    const handleLogin = async () => {
-  
-      if(isLoading){
-          return
-      }
-  
-      if(!email || !password || isLoading){
-          Alert.alert("please fill all the fields..!")
-          return
-      }
-  
-      try {
-          showLoader()
-          await login( email, password)
-          Alert.alert("Successfuly Loging..!")
-          router.replace("/home")
-      } catch (error) {
-          Alert.alert("Login failed..!")
-      } finally{
-          hideLoader()
-      }
+  const handleLogin = async () => {
+    if (isLoading) {
+      return;
     }
+
+    if (!email || !password) {
+      Alert.alert("Please fill all the fields!");
+      return;
+    }
+
+    try {
+      showLoader();
+      await login(email, password);
+      Alert.alert("Successfully logged in!");
+      router.replace("/home");
+    } catch (error) {
+      Alert.alert("Login Failed!");
+    } finally {
+      hideLoader();
+    }
+  };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View className="flex-1 bg-gray-100 px-6 justify-center items-center">
-
-        <Text className="text-4xl font-bold text-gray-900">Welcome Back 👋</Text>
-        <Text className="text-gray-500 mb-8">Login to continue</Text>
-
-        <TextInput
-          placeholder="Email"
-          placeholderTextColor="#888"
-          value={email}
-          onChangeText={setEmail}
-          className="w-full bg-white p-4 rounded-2xl mb-4 border border-gray-300"
-        />
-
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor="#888"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-          className="w-full bg-white p-4 rounded-2xl mb-4 border border-gray-300"
-        />
-
-        <Pressable
-          className="w-full bg-indigo-600 p-4 rounded-2xl"
-          onPress={handleLogin }
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+      >
+        <ImageBackground
+          source={{ uri: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80' }}
+          className="flex-1"
+          resizeMode="cover"
         >
-          <Text className="text-white text-center font-semibold text-lg">Login</Text>
-        </Pressable>
+          {/* Overlay */}
+          <View className="flex-1 bg-black/40 justify-center items-center px-6">
 
-        {/* Register Link */}
-        <View className="w-full flex-row justify-center mt-4">
-          <Text className="text-gray-600">
-            Don't have an account?{" "}
-            <TouchableOpacity onPress={() => router.push("/register")}>
-              <Text className="text-indigo-600 font-bold">Register</Text>
+            <Text className="text-4xl font-bold text-white mb-12">
+              Welcome Back
+            </Text>
+
+            {/* Email Input */}
+            <View className="w-full bg-white/45 rounded-full px-5 py-2 mb-4 flex-row items-center">
+              <Ionicons name="mail-outline" size={20} color="gray" />
+              <TextInput
+                placeholder="Email"
+                placeholderTextColor="gray"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                className="flex-1 ml-3 text-gray-800"
+              />
+            </View>
+
+            {/* Password Input */}
+            <View className="w-full bg-white/45 rounded-full px-5 py-2 mb-6 flex-row items-center">
+              <Ionicons name="lock-closed-outline" size={20} color="gray" />
+              <TextInput
+                placeholder="Password"
+                placeholderTextColor="gray"
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+                className="flex-1 ml-3 text-gray-800"
+              />
+              <TouchableOpacity 
+                onPress={() => setShowPassword(!showPassword)}
+                className="ml-2"
+              >
+                <Ionicons 
+                  name={showPassword ? "eye-off-outline" : "eye-outline"} 
+                  size={20} 
+                  color="gray" 
+                />
+              </TouchableOpacity>
+            </View>
+
+            {/* Login Button */}
+            <TouchableOpacity 
+              onPress={handleLogin}
+              className="w-full bg-blue-400 rounded-3xl py-2 mb-2 border border-white/30 overflow-hidden"
+              activeOpacity={0.8}
+              disabled={isLoading}
+            >
+              <Text className="text-white text-center font-bold text-lg">
+                {isLoading ? "Signing in..." : "Log in"}
+              </Text>
             </TouchableOpacity>
-          </Text>
-        </View>
 
-      </View>
+            {/* Register Link */}
+            <View className="flex-row items-center">
+              <Text className="text-white">
+                Don't you have an existing account?{" "}
+              </Text>
+              <TouchableOpacity 
+                onPress={() => router.push("/register")}
+              >
+                <Text className="text-white font-bold text-sm underline">
+                  Sign Up
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+          </View>
+        </ImageBackground>
+      </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );
 };
 
-export default Loging;
+export default Login;
