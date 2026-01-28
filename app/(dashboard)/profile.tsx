@@ -7,6 +7,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { updateUser } from "@/utils/userUtil";
 import { logout } from "@/services/authService";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from 'expo-linear-gradient';
+import { Feather } from "@expo/vector-icons";
 
 const Profile = () => {
 
@@ -18,18 +20,17 @@ const Profile = () => {
     
     const [userData, setUserData] = useState<any>({
         name: "",
-        image: null // Firebase eke photoURL eka methanata thama enne
+        image: null
     });
 
     useEffect(() => {
-    if (user) {
-        setUserData({
-            // Firestore එකේ field එක photoURL නම් ඒක අනිවාර්යයෙන් දෙන්න
-            name: user?.displayName || "", 
-            image: user?.photoURL || null
-        });
-    }
-}, [user]);
+        if (user) {
+            setUserData({
+                name: user?.displayName || "", 
+                image: user?.photoURL || null
+            });
+        }
+    }, [user]);
 
     const pickImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
@@ -40,7 +41,6 @@ const Profile = () => {
         });
 
         if (!result.canceled) {
-            // Local image eka state ekata damma
             setUserData({ ...userData, image: result.assets[0] });
         }
     };
@@ -54,13 +54,12 @@ const Profile = () => {
         try {
             setLoading(true);
             const { name, image } = userData;
-            let finalImageUrl = user?.photoURL; // Baseline URL
+            let finalImageUrl = user?.photoURL;
 
-            // 1. Aluth image ekak pick karala nam eka upload karanna
             if (image && typeof image === 'object' && image.uri) {
                 const uploadResp = await uploadFileToCloudinary(image, "profiles");
                 if (uploadResp.success) {
-                    finalImageUrl = uploadResp.data; // Cloudinary secure_url eka
+                    finalImageUrl = uploadResp.data;
                 } else {
                     Alert.alert("Error", "Cloudinary upload failed.");
                     setLoading(false);
@@ -68,15 +67,12 @@ const Profile = () => {
                 }
             }
 
-            // 2. Firebase Update (Firestore update)
-            // Firebase eke fields 'displayName' saha 'photoURL' widihata update karanawa
             const resp = await updateUser(user?.uid as string, {
                 displayName: name,
                 photoURL: finalImageUrl
             });
 
             if (resp.success) {
-                // Local state update eka (Auth Context)
                 if (setUser) {
                     setUser({
                         ...user,
@@ -106,79 +102,184 @@ const Profile = () => {
     };
 
     return (
-        <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-            <ScrollView className="flex-1 bg-gray-100 px-6">
-                <View className="items-center mb-8 mt-6">
-                    <TouchableOpacity onPress={isEditing ? pickImage : undefined} disabled={loading}>
-                        <Image
-                            // getProfileImage kiyana eka imageService eke thiyena eka use karanna
-                            source={getProfileImage(userData.image)}
-                            className="w-24 h-24 rounded-full mb-4 bg-gray-200"
+        // <SafeAreaView style={{ flex: 1, backgroundColor: '#F9FAFB' }} edges={['top']}>
+            <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+                {/* Header Gradient Background */}
+                <View className="relative">
+                    <View className="h-40 bg-gradient-to-br from-indigo-600 to-purple-600">
+                        <LinearGradient
+                            colors={['#4F46E5', '#7C3AED']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            className="h-full w-full"
                         />
-                        {isEditing && (
-                            <View className="absolute bottom-2 right-0 bg-indigo-600 rounded-full p-2 border-2 border-white">
-                                <Text style={{ fontSize: 10 }}>📷</Text>
+                    </View>
+
+                    {/* Profile Image Container */}
+                    <View className="items-center -mt-16 px-6">
+                        <TouchableOpacity 
+                            onPress={isEditing ? pickImage : undefined} 
+                            disabled={loading}
+                            activeOpacity={isEditing ? 0.7 : 1}
+                        >
+                            <View className="relative">
+                                {/* Image with border and shadow */}
+                                <View className="bg-white p-1.5 rounded-full shadow-lg">
+                                    <Image
+                                        source={getProfileImage(userData.image)}
+                                        className="w-32 h-32 rounded-full bg-gray-200"
+                                    />
+                                </View>
+                                
+                                {isEditing && (
+                                    <View className="absolute bottom-1 right-1 bg-indigo-600 rounded-full p-3 border-4 border-white shadow-lg">
+                                        <Text style={{ fontSize: 16 }}>📷</Text>
+                                    </View>
+                                )}
+                            </View>
+                        </TouchableOpacity>
+
+                        {/* Name and Email */}
+                        <View className="items-center mt-4 mb-6">
+                            {isEditing ? (
+                                <View className="w-full px-4">
+                                    <TextInput
+                                        value={userData.name}
+                                        onChangeText={(text) => setUserData({ ...userData, name: text })}
+                                        className="text-2xl font-bold text-gray-900 bg-white border-2 border-indigo-600 rounded-xl px-4 py-3 mb-2 text-center shadow-sm"
+                                        placeholder="Enter name"
+                                        placeholderTextColor="#9CA3AF"
+                                    />
+                                </View>
+                            ) : (
+                                <Text className="text-3xl font-bold text-gray-900 mb-1">
+                                    {userData.name || "No Name"}
+                                </Text>
+                            )}
+                            <View className="flex-row items-center bg-gray-100 px-4 py-2 rounded-full mt-2">
+                                <Text className="text-sm">✉️</Text>
+                                <Text className="text-gray-600 ml-2 font-medium">{user?.email}</Text>
+                            </View>
+                        </View>
+                    </View>
+                </View>
+
+                <View className="px-6">
+                    {/* Action Buttons */}
+                    <TouchableOpacity
+                        onPress={() => isEditing ? handleSaveProfile() : setIsEditing(true)}
+                        disabled={loading}
+                        className={`${loading ? 'bg-indigo-400' : 'bg-indigo-600'} p-4 rounded-2xl mb-3 shadow-lg`}
+                        activeOpacity={0.8}
+                    >
+                        {loading ? (
+                            <View className="flex-row items-center justify-center">
+                                <ActivityIndicator color="#fff" />
+                                <Text className="text-white ml-3 font-semibold text-base">Processing...</Text>
+                            </View>
+                        ) : (
+                            <View className="flex-row items-center justify-center">
+                                <Text className="text-2xl mr-2">{isEditing ? "💾" : "✏️"}</Text>
+                                <Text className="text-white font-bold text-base">
+                                    {isEditing ? "Save Profile" : "Edit Profile"}
+                                </Text>
                             </View>
                         )}
                     </TouchableOpacity>
 
-                    {isEditing ? (
-                        <TextInput
-                            value={userData.name}
-                            onChangeText={(text) => setUserData({ ...userData, name: text })}
-                            className="text-2xl font-bold text-gray-900 border-b-2 border-indigo-600 px-2 mb-2 w-full text-center"
-                            placeholder="Enter name"
-                        />
-                    ) : (
-                        <Text className="text-2xl font-bold text-gray-900">{userData.name || "No Name"}</Text>
+                    {isEditing && !loading && (
+                        <TouchableOpacity
+                            onPress={() => {
+                                setIsEditing(false);
+                                setUserData({ name: user?.displayName, image: user?.photoURL });
+                            }}
+                            className="bg-gray-200 p-4 rounded-2xl mb-6 border-2 border-gray-300"
+                            activeOpacity={0.7}
+                        >
+                            <View className="flex-row items-center justify-center">
+                                <Text className="text-xl mr-2">❌</Text>
+                                <Text className="text-gray-700 font-bold text-base">Cancel</Text>
+                            </View>
+                        </TouchableOpacity>
                     )}
-                    <Text className="text-gray-500">{user?.email}</Text>
-                </View>
 
-                {/* Edit/Save Button */}
-                <TouchableOpacity
-                    onPress={() => isEditing ? handleSaveProfile() : setIsEditing(true)}
-                    disabled={loading}
-                    className={`${loading ? 'bg-indigo-400' : 'bg-indigo-600'} p-4 rounded-2xl mb-4`}
-                >
-                    {loading ? <ActivityIndicator color="#fff" /> : (
-                        <Text className="text-white text-center font-semibold text-lg">
-                            {isEditing ? "Save Profile" : "Edit Profile"}
-                        </Text>
-                    )}
-                </TouchableOpacity>
+                    {/* Account Information Card */}
+                    <View className="bg-white rounded-3xl p-6 mb-6 shadow-md border border-gray-100">
+                        <View className="flex-row items-center mb-5">
+                            <View className="bg-indigo-100 p-2 rounded-xl mr-3">
+                                <Text className="text-2xl">👤</Text>
+                            </View>
+                            <Text className="text-gray-900 font-bold text-lg">Account Information</Text>
+                        </View>
 
-                {isEditing && !loading && (
-                    <TouchableOpacity
-                        onPress={() => {
-                            setIsEditing(false);
-                            // Parana data tika ayeth set karanawa
-                            setUserData({ name: user?.displayName, image: user?.photoURL });
-                        }}
-                        className="bg-gray-400 p-4 rounded-2xl mb-6"
-                    >
-                        <Text className="text-white text-center font-semibold text-lg">Cancel</Text>
-                    </TouchableOpacity>
-                )}
+                        {/* Info Row 1 */}
+                        <View className="bg-gray-50 rounded-2xl p-4 mb-3">
+                            <Text className="text-gray-500 text-xs font-semibold uppercase mb-1">Full Name</Text>
+                            <Text className="text-gray-900 font-semibold text-base">
+                                {userData.name || "Not Set"}
+                            </Text>
+                        </View>
 
-                {/* Account Info */}
-                <View className="bg-white rounded-2xl p-5 mb-6 shadow-sm">
-                    <Text className="text-gray-700 font-bold mb-4">Account Information</Text>
-                    <View className="flex-row justify-between mb-3">
-                        <Text className="text-gray-500">Full Name</Text>
-                        <Text className="text-gray-900 font-medium">{userData.name}</Text>
+                        {/* Info Row 2 */}
+                        <View className="bg-gray-50 rounded-2xl p-4">
+                            <Text className="text-gray-500 text-xs font-semibold uppercase mb-1">Email Address</Text>
+                            <Text className="text-gray-900 font-semibold text-base">{user?.email}</Text>
+                        </View>
                     </View>
-                    <View className="flex-row justify-between">
-                        <Text className="text-gray-500">Email Address</Text>
-                        <Text className="text-gray-900 font-medium">{user?.email}</Text>
-                    </View>
-                </View>
 
-                <TouchableOpacity className="bg-red-100 p-4 rounded-2xl mb-10" onPress={onLogout}>
-                    <Text className="text-red-600 text-center font-semibold text-lg">Log Out</Text>
-                </TouchableOpacity>
+                    {/* Action Buttons */}
+                    <View className="mx-6 mt-6 gap-2 space-y-3">
+        
+                        {/* Privacy Settings */}
+                        <TouchableOpacity className="bg-white rounded-2xl p-4 flex-row items-center justify-between shadow-sm">
+                        <View className="flex-row items-center">
+                            <View className="bg-blue-100 p-2.5 rounded-full">
+                            <Feather name="shield" size={18} color="#3B82F6" />
+                            </View>
+                            <Text className="text-gray-900 font-medium ml-4">Privacy Settings</Text>
+                        </View>
+                        <Feather name="chevron-right" size={20} color="#9CA3AF" />
+                        </TouchableOpacity>
+
+                        {/* Notifications */}
+                        <TouchableOpacity className="bg-white rounded-2xl p-4 flex-row items-center justify-between shadow-sm">
+                        <View className="flex-row items-center">
+                            <View className="bg-yellow-100 p-2.5 rounded-full">
+                            <Feather name="bell" size={18} color="#F59E0B" />
+                            </View>
+                            <Text className="text-gray-900 font-medium ml-4">Notifications</Text>
+                        </View>
+                        <Feather name="chevron-right" size={20} color="#9CA3AF" />
+                        </TouchableOpacity>
+
+                        {/* Help & Support */}
+                        <TouchableOpacity className="bg-white rounded-2xl p-4 flex-row items-center justify-between shadow-sm">
+                        <View className="flex-row items-center">
+                            <View className="bg-green-100 p-2.5 rounded-full">
+                            <Feather name="help-circle" size={18} color="#10B981" />
+                            </View>
+                            <Text className="text-gray-900 font-medium ml-4">Help & Support</Text>
+                        </View>
+                        <Feather name="chevron-right" size={20} color="#9CA3AF" />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Logout Button */}
+                    <View className="mx-6 mt-6 mb-8">
+                        <TouchableOpacity 
+                            className="bg-red-500 p-4 rounded-2xl flex-row items-center justify-center shadow-md"
+                            onPress={onLogout}
+                            activeOpacity={0.7}
+                        >
+                            <Feather name="log-out" size={18} color="white" />
+                            <Text className="text-white font-semibold text-base ml-2">Log Out</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                   
+                </View>
             </ScrollView>
-        </SafeAreaView>
+        // </SafeAreaView>
     );
 };
 
