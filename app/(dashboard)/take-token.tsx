@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Modal } from "react-native";
 import { useState } from "react";
 import { saveUserToken } from "@/services/tokenService"
 import { useRouter } from "expo-router";
@@ -17,6 +17,10 @@ export default function TakeToken() {
   const [loading, setLoading] = useState(false);
   const [selectedCenter, setSelectedCenter] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState<ServiceType | null>(null);
+
+  // Custom Modal states
+  const [modalVisible, setModalVisible] = useState(false);
+  const [generatedToken, setGeneratedToken] = useState<string | null>(null);
 
   const serviceCenter = [
     { id: 1, name: "Bank", icon: "🏦", color: "bg-blue-50", border: "border-blue-100" },
@@ -53,22 +57,61 @@ export default function TakeToken() {
       setLoading(true);
       const result = await saveUserToken(selectedCenter, selectedService.name);
       if (result) {
+        setGeneratedToken(result.token);
         setSelectedCenter(null); 
         setSelectedService(null);
-        Alert.alert("Token Generated ✅", `Your token: ${result.token}`, [
-          { text: "OK", onPress: () => router.replace("/my-token") },
-        ]);
+        setModalVisible(true); // Default alert wenuwata modal eka open karanawa
       }
     } catch (err) {
-      Alert.alert("Error ❌", "Something went wrong");
+      console.log(err);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    router.replace("/my-token");
+  };
+
   return (
-    <View className="flex-1 bg-blue-50">
-      {/* Header Section */}
+    <View className="flex-1 bg-slate-50">
+      {/* --- CUSTOM SUCCESS MODAL --- */}
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="fade"
+      >
+        <View className="flex-1 justify-center items-center bg-black/60 px-8">
+          <View className="bg-white w-full rounded-[40px] p-8 items-center shadow-2xl">
+            <View className="bg-emerald-100 p-6 rounded-full mb-6">
+              <Ionicons name="checkmark-circle" size={60} color="#10b981" />
+            </View>
+            
+            <Text className="text-slate-800 text-2xl font-black text-center mb-2">
+              Token Generated!
+            </Text>
+            
+            <Text className="text-slate-500 text-center text-base mb-6">
+              Your spot in the queue has been reserved successfully.
+            </Text>
+
+            <View className="bg-slate-50 w-full p-6 rounded-3xl border border-slate-100 items-center mb-8">
+                <Text className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mb-1">Your Token Number</Text>
+                <Text className="text-indigo-600 text-5xl font-black">{generatedToken}</Text>
+            </View>
+
+            <TouchableOpacity 
+              onPress={handleCloseModal}
+              className="w-full bg-indigo-600 py-4 rounded-2xl shadow-lg shadow-indigo-200"
+            >
+              <Text className="text-white text-center font-bold text-lg">View My Token</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* --- HEADER --- */}
       <LinearGradient
         colors={["#4f46e5", "#7c3aed"]}
         className="pt-16 pb-12 px-6 rounded-b-[40px] shadow-lg"
@@ -78,10 +121,10 @@ export default function TakeToken() {
       </LinearGradient>
 
       <ScrollView className="flex-1 px-6 -mt-8" showsVerticalScrollIndicator={false}>
-        {/* Service Centers Grid */}
+        {/* Service Centers */}
         <View className="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100 mb-6">
           <Text className="text-slate-800 font-bold mb-4">Select Service Center</Text>
-          <View className="flex-row flex-wrap gap-3 mb-6">
+          <View className="flex-row flex-wrap gap-3">
             {serviceCenter.map((center) => (
               <TouchableOpacity
                 key={center.id}
@@ -89,14 +132,14 @@ export default function TakeToken() {
                   setSelectedCenter(center.name);
                   setSelectedService(null);
                 }}
-                className={`flex-1 min-w-[45%] p-4 rounded-2xl border-2 ${
+                className={`flex-1 min-w-[45%] p-4 rounded-2xl border-2 items-center ${
                   selectedCenter === center.name
-                    ? "border-blue-500 bg-blue-100"
-                    : `${center.border} ${center.color}`
+                    ? "border-indigo-500 bg-indigo-50"
+                    : "border-slate-50 bg-slate-50"
                 }`}
               >
                 <Text className="text-3xl mb-2">{center.icon}</Text>
-                <Text className="font-semibold text-gray-800">
+                <Text className="font-bold text-slate-700 text-center text-xs">
                   {center.name}
                 </Text>
               </TouchableOpacity>
@@ -146,13 +189,10 @@ export default function TakeToken() {
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text className="text-white text-center font-bold text-lg">
-              Confirm & Generate
-            </Text>
+            <Text className="text-white text-center font-bold text-lg"> Confirm & Generate </Text>
           )}
         </TouchableOpacity>
 
-        {/* Tip Box */}
         <View className="bg-amber-50 p-4 rounded-2xl border border-amber-100 flex-row items-center mb-10">
           <Ionicons name="bulb-outline" size={20} color="#b45309" />
           <Text className="text-amber-800 text-xs ml-3 flex-1">
