@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { getTokenHistory, TokenData } from "@/services/tokenService";
 import { Timestamp } from "firebase/firestore";
+import { useFocusEffect } from "@react-navigation/native";
 
 const getStatusColor = (status: TokenData["status"]) => {
   switch (status) {
@@ -27,15 +28,31 @@ const formatDate = (createdAt: any) => {
 export default function History() {
   const [history, setHistory] = useState<TokenData[]>([]);
 
-  useEffect(() => {
-    const fetchHistory = async () => {
-      const tokens = await getTokenHistory();
-      setHistory(tokens);
-    };
+  // useEffect(() => {
+  //   const fetchHistory = async () => {
+  //     const tokens = await getTokenHistory();
+  //     setHistory(tokens);
+  //   };
 
-    fetchHistory();
-  }, []);
+  //   fetchHistory();
+  // }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      const fetchHistory = async () => {
+        try {
+          const tokens = await getTokenHistory();
+          setHistory(tokens);
+        } catch (error) {
+          console.error("History fetch error:", error);
+        }
+      };
+
+      fetchHistory();
+    }, [])
+  );
+
+ 
   return (
     <ScrollView className="flex-1 bg-white p-4">
       <Text className="text-xl font-bold mb-4">Token History</Text>
