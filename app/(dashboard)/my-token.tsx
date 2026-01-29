@@ -2,20 +2,15 @@ import { useEffect, useState, useCallback } from "react";
 import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from "react-native";
 import { getActiveTokens, cancelToken, TokenData } from "@/services/tokenService";
 import { useRouter } from "expo-router";
-import { LinearGradient } from 'expo-linear-gradient'; // Install: npx expo install expo-linear-gradient
+import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from "@react-navigation/native";
-
+import { Ionicons } from "@expo/vector-icons";
 
 export default function MyToken() {
   const [tokens, setTokens] = useState<TokenData[]>([]);
   const [loading, setLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const router = useRouter();
-  
-
-  // useEffect(() => {
-  //   fetchTokens();
-  // }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -32,7 +27,6 @@ export default function MyToken() {
 
   const handleCancel = async (token: TokenData) => {
     if (!token?.id) return;
-
     Alert.alert(
       "Cancel Token",
       `Are you sure you want to cancel Token ${token.token}?`,
@@ -44,19 +38,13 @@ export default function MyToken() {
           onPress: async () => {
             try {
               setCancellingId(token.id!);
-              
               await cancelToken(token.id!);
-              
               Alert.alert("Success", `Token ${token.token} has been cancelled.`);
-              
-              // Data refresh wenakanma loading thiyana eka hodai
               await fetchTokens(); 
-              
             } catch (error) {
-              console.error("Cancel error:", error);
-              Alert.alert("Error", "Could not cancel the token. Please try again.");
+              Alert.alert("Error", "Could not cancel the token.");
             } finally {
-              setCancellingId(null); // Okkoma iwara unama loading nawattanawa
+              setCancellingId(null);
             }
           },
         },
@@ -64,180 +52,122 @@ export default function MyToken() {
     );
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "active":
-        return "bg-emerald-100 border-emerald-300";
-      case "completed":
-        return "bg-blue-100 border-blue-300";
-      case "cancelled":
-        return "bg-red-100 border-red-300";
-      default:
-        return "bg-gray-100 border-gray-300";
-    }
-  };
-
-  const getStatusTextColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "active":
-        return "text-emerald-700";
-      case "completed":
-        return "text-blue-700";
-      case "cancelled":
-        return "text-red-700";
-      default:
-        return "text-gray-700";
-    }
-  };
-
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <Text className="text-gray-600 text-lg">Loading tokens...</Text>
+      <View className="flex-1 items-center justify-center bg-slate-50">
+        <ActivityIndicator size="large" color="#4f46e5" />
       </View>
     );
   }
 
   if (tokens.length === 0) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50 p-6">
-        <View className="bg-white p-8 rounded-3xl shadow-lg items-center">
-          <Text className="text-6xl mb-4">🎫</Text>
-          <Text className="text-gray-800 text-2xl font-bold mb-2">No Active Tokens</Text>
-          <Text className="text-gray-500 text-center mb-6">
-            You don't have any tokens yet. Get one to join the queue!
-          </Text>
-          <TouchableOpacity
-            className="bg-indigo-600 px-8 py-4 rounded-2xl shadow-md"
-            onPress={() => router.replace("/take-token")}
-          >
-            <Text className="text-white text-lg font-semibold">Get a Token</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+        <ScrollView className="flex-1 bg-slate-50">
+            <LinearGradient
+                colors={["#4f46e5", "#7c3aed"]}
+                className="pt-16 pb-12 px-6 rounded-b-[40px] shadow-lg"
+            >
+                <Text className="text-white/80 text-lg font-medium">Your Queue</Text>
+                <Text className="text-white text-3xl font-bold">My Tokens</Text>
+            </LinearGradient>
+            
+            <View className="px-6 -mt-8">
+                <View className="bg-white p-10 rounded-[40px] shadow-sm items-center border border-slate-100">
+                    <View className="bg-indigo-50 p-6 rounded-full mb-4">
+                        <Ionicons name="ticket-outline" size={50} color="#4f46e5" />
+                    </View>
+                    <Text className="text-slate-800 text-xl font-bold">No Active Tokens</Text>
+                    <Text className="text-slate-400 text-center mt-2 mb-6">You don't have any tokens right now.</Text>
+                    <TouchableOpacity 
+                        onPress={() => router.push("/take-token")}
+                        className="bg-indigo-600 px-8 py-3 rounded-2xl"
+                    >
+                        <Text className="text-white font-bold">Get a Token</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </ScrollView>
     );
   }
 
   return (
-    <View className="flex-1 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-      {/* Header */}
-      <View className="bg-white pt-2 pb-6 px-6 shadow-sm">
-        <Text className="text-3xl font-bold text-gray-800 mb-1">My Tokens</Text>
-        <Text className="text-gray-500">You have {tokens.length} token{tokens.length > 1 ? 's' : ''}</Text>
-      </View>
-
-      {/* Tokens List */}
-      <ScrollView 
-        className="flex-1 px-4 pt-4 mb-20"
-        showsVerticalScrollIndicator={false}
+    <View className="flex-1 bg-blue-50">
+      {/* Header Section - Home Screen Style */}
+      <LinearGradient
+        colors={["#4f46e5", "#7c3aed"]}
+        className="pt-16 pb-12 px-6 rounded-b-[40px] shadow-lg"
       >
+        <View className="flex-row justify-between items-center">
+            <View>
+                <Text className="text-white/80 text-lg font-medium">Your Queue</Text>
+                <Text className="text-white text-3xl font-bold">My Tokens</Text>
+            </View>
+            <View className="bg-white/20 p-3 rounded-full">
+                <Ionicons name="layers-outline" size={24} color="white" />
+            </View>
+        </View>
+      </LinearGradient>
+
+      {/* Tokens List - Overlapping the gradient */}
+      <ScrollView className="flex-1 px-6 -mt-8" showsVerticalScrollIndicator={false}>
         {tokens.map((token, index) => (
-          <View
-            key={token.id || index}
-            className="bg-white rounded-2xl shadow-md mb-3 overflow-hidden"
-          >
-            {/* Token Header with Gradient */}
-            <View className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4">
-              <View className="flex-row items-center justify-between">
-                <View>
-                  <Text className="text-gray text-xs opacity-80 mb-0.5">Token Number</Text>
-                  <Text className="text-red text-3xl font-bold">{token.token}</Text>
+          <View key={token.id || index} className="bg-white rounded-[32px] shadow-sm border border-slate-100 mb-6 overflow-hidden">
+            {/* Top Info Bar */}
+            <View className="flex-row justify-between items-center px-6 py-4 border-b border-slate-50">
+                <View className="flex-row items-center">
+                    <Ionicons name="business-outline" size={18} color="#64748b" />
+                    <Text className="text-slate-500 font-bold ml-2 uppercase text-[11px] tracking-tighter">
+                        {token.serviceCenter}
+                    </Text>
                 </View>
-                <View className={`px-3 py-1.5 rounded-full border ${getStatusColor(token.status)}`}>
-                  <Text className={`font-semibold text-sm capitalize ${getStatusTextColor(token.status)}`}>
-                    {token.status}
-                  </Text>
+                <View className="bg-emerald-100 px-3 py-1 rounded-full">
+                    <Text className="text-emerald-700 text-[10px] font-bold uppercase">{token.status}</Text>
                 </View>
-              </View>
             </View>
 
-            {/* Token Details */}
-            <View className="p-4">
-              {/* Service Center */}
-              <View className="flex-row items-center mb-3">
-                <View className="bg-indigo-100 p-2 rounded-lg mr-2">
-                  <Text className="text-lg">🏢</Text>
-                </View>
-                <View className="flex-1">
-                  <Text className="text-gray-500 text-xs mb-0.5">Service Center</Text>
-                  <Text className="text-gray-800 text-base font-semibold">
-                    {token.serviceCenter}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Service Name */}
-              <View className="flex-row items-center mb-3">
-                <View className="bg-purple-100 p-2 rounded-lg mr-2">
-                  <Text className="text-lg">📋</Text>
-                </View>
-                <View className="flex-1">
-                  <Text className="text-gray-500 text-xs mb-0.5">Service</Text>
-                  <Text className="text-gray-800 text-base font-semibold">
-                    {token.serviceName}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Queue Position & Time */}
-              <View className="flex-row gap-2 mb-3">
-                <View className="flex-1 bg-amber-50 p-3 rounded-xl border border-amber-200">
-                  <Text className="text-amber-600 text-xs mb-0.5">Queue Position</Text>
-                  <Text className="text-amber-900 text-xl font-bold">
-                    #{token.queuePosition}
-                  </Text>
-                </View>
-                <View className="flex-1 bg-blue-50 p-3 rounded-xl border border-blue-200">
-                  <Text className="text-blue-600 text-xs mb-0.5">Est. Time</Text>
-                  <Text className="text-blue-900 text-xl font-bold">
-                    {token.estimatedTime}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Action Button */}
-              {token.status === "active" && (
-                <TouchableOpacity
-                  className="bg-red-500 p-3 rounded-xl shadow-sm active:bg-red-600"
-                  onPress={() => handleCancel(token)}
-                  disabled={cancellingId !== null}
-                >
-                  {cancellingId === token.id ? (
-                    <View className="flex-row items-center justify-center">
-                      <ActivityIndicator color="#fff" />
-                      <Text className="text-white ml-3 font-semibold text-base">
-                        Processing...
-                      </Text>
+            {/* Token Main Body */}
+            <View className="p-6">
+                <View className="flex-row justify-between items-center mb-6">
+                    <View>
+                        <Text className="text-slate-400 text-xs font-bold uppercase">Token Number</Text>
+                        <Text className="text-indigo-600 text-5xl font-black">{token.token}</Text>
                     </View>
-                  ) : (
-                    <Text className="text-white text-center font-bold text-base">
-                      ❌ Cancel Token
-                    </Text>
-                  )}
-                  
-                </TouchableOpacity>
-              )}
-
-              {token.status === "completed" && (
-                <View className="bg-green-50 p-3 rounded-xl border border-green-200">
-                  <Text className="text-green-700 text-center font-semibold text-sm">
-                    ✅ Service Completed
-                  </Text>
+                    <View className="items-end">
+                        <Text className="text-slate-400 text-xs font-bold uppercase">Estimated Wait</Text>
+                        <Text className="text-slate-800 text-2xl font-bold">{token.estimatedTime}</Text>
+                    </View>
                 </View>
-              )}
 
-              {token.status === "cancelled" && (
-                <View className="bg-gray-50 p-3 rounded-xl border border-gray-200">
-                  <Text className="text-gray-600 text-center font-semibold text-sm">
-                    🚫 This token was cancelled
-                  </Text>
+                {/* Details Grid */}
+                <View className="flex-row bg-slate-50 rounded-2xl p-4 mb-6">
+                    <View className="flex-1 border-r border-slate-200 pr-2">
+                        <Text className="text-slate-400 text-[10px] font-bold uppercase">Service</Text>
+                        <Text className="text-slate-700 font-bold" numberOfLines={1}>{token.serviceName}</Text>
+                    </View>
+                    <View className="flex-1 pl-4">
+                        <Text className="text-slate-400 text-[10px] font-bold uppercase">Position</Text>
+                        <Text className="text-slate-700 font-bold">#{token.queuePosition} in line</Text>
+                    </View>
                 </View>
-              )}
+
+                {/* Cancel Button */}
+                {token.status === "active" && (
+                  <TouchableOpacity
+                    onPress={() => handleCancel(token)}
+                    disabled={cancellingId !== null}
+                    className="bg-red-50 py-4 rounded-2xl flex-row justify-center items-center"
+                  >
+                    {cancellingId === token.id ? (
+                      <ActivityIndicator size="small" color="#ef4444" />
+                    ) : (
+                      <Text className="text-red-500 font-bold">Cancel Token</Text>
+                    )}
+                  </TouchableOpacity>
+                )}
             </View>
           </View>
         ))}
-
-        <View className="h-6" />
+        <View className="h-10" />
       </ScrollView>
     </View>
   );
