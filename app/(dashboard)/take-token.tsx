@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from "react-native";
 import { useState } from "react";
 import { saveUserToken } from "@/services/tokenService"
 import { useRouter } from "expo-router";
@@ -13,6 +13,8 @@ type ServiceType = {
 
 export default function TakeToken() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
   const [selectedCenter, setSelectedCenter] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState<ServiceType | null>(null);
 
@@ -49,6 +51,7 @@ export default function TakeToken() {
   if (!selectedCenter || !selectedService) return;
 
   try {
+    setLoading(true);
     const result = await saveUserToken(selectedCenter, selectedService.name);
 
     if (result) {
@@ -68,12 +71,14 @@ export default function TakeToken() {
   } catch (err) {
     console.log("Error generating token:", err);
     Alert.alert("Error ❌", "Something went wrong");
+  }finally{
+    setLoading(false);
   }
 };
 
 
   return (
-    <ScrollView className="flex-1 bottom-20 bg-blue-50" showsVerticalScrollIndicator={true}>
+    <ScrollView className="flex-1 md-20 bg-blue-50" showsVerticalScrollIndicator={false}>
       <View className="p-6">
 
         {/* Header */}
@@ -153,9 +158,19 @@ export default function TakeToken() {
               : "bg-gray-300"
           }`}
         >
-          <Text className="text-white text-center font-bold text-lg">
-            Generate Token
-          </Text>
+          {loading ? (
+            <View className="flex-row items-center justify-center">
+              <ActivityIndicator color="#fff" />
+              <Text className="text-white ml-3 font-semibold text-base">
+                Processing...
+              </Text>
+            </View>
+          ) : (
+            <Text className="text-white text-center font-bold text-lg">
+              Generate Token
+            </Text>
+          )}
+          
         </TouchableOpacity>
 
         {/* Info */}
