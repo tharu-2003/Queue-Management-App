@@ -1,17 +1,27 @@
-import { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, Alert, ScrollView } from "react-native";
+import { useEffect, useState, useCallback } from "react";
+import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from "react-native";
 import { getActiveTokens, cancelToken, TokenData } from "@/services/tokenService";
 import { useRouter } from "expo-router";
 import { LinearGradient } from 'expo-linear-gradient'; // Install: npx expo install expo-linear-gradient
+import { useFocusEffect } from "@react-navigation/native";
+
 
 export default function MyToken() {
   const [tokens, setTokens] = useState<TokenData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
   const router = useRouter();
+  
 
-  useEffect(() => {
-    fetchTokens();
-  }, []);
+  // useEffect(() => {
+  //   fetchTokens();
+  // }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchTokens();
+    }, [])
+  );
 
   const fetchTokens = async () => {
     setLoading(true);
@@ -32,9 +42,22 @@ export default function MyToken() {
           text: "Yes, Cancel",
           style: "destructive",
           onPress: async () => {
-            await cancelToken(token.id!);
-            Alert.alert("Success", `Token ${token.token} has been cancelled.`);
-            fetchTokens(); // Refresh the list
+            try {
+              setCancellingId(token.id!);
+              
+              await cancelToken(token.id!);
+              
+              Alert.alert("Success", `Token ${token.token} has been cancelled.`);
+              
+              // Data refresh wenakanma loading thiyana eka hodai
+              await fetchTokens(); 
+              
+            } catch (error) {
+              console.error("Cancel error:", error);
+              Alert.alert("Error", "Could not cancel the token. Please try again.");
+            } finally {
+              setCancellingId(null); // Okkoma iwara unama loading nawattanawa
+            }
           },
         },
       ]
@@ -106,7 +129,7 @@ export default function MyToken() {
       {/* Tokens List */}
       <ScrollView 
         className="flex-1 px-4 pt-4 mb-20"
-        showsVerticalScrollIndicator={true}
+        showsVerticalScrollIndicator={false}
       >
         {tokens.map((token, index) => (
           <View
@@ -177,10 +200,21 @@ export default function MyToken() {
                 <TouchableOpacity
                   className="bg-red-500 p-3 rounded-xl shadow-sm active:bg-red-600"
                   onPress={() => handleCancel(token)}
+                  disabled={cancellingId !== null}
                 >
-                  <Text className="text-white text-center font-bold text-base">
-                    ❌ Cancel Token
-                  </Text>
+                  {cancellingId === token.id ? (
+                    <View className="flex-row items-center justify-center">
+                      <ActivityIndicator color="#fff" />
+                      <Text className="text-white ml-3 font-semibold text-base">
+                        Processing...
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text className="text-white text-center font-bold text-base">
+                      ❌ Cancel Token
+                    </Text>
+                  )}
+                  
                 </TouchableOpacity>
               )}
 
