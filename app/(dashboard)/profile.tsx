@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Image, TouchableOpacity, ScrollView, TextInput, Modal, ActivityIndicator } from "react-native";
+import { View, Text, Image, TouchableOpacity, ScrollView, TextInput, Modal, ActivityIndicator, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from 'expo-image-picker';
 import { getProfileImage, uploadFileToCloudinary } from "@/services/imageService";
@@ -25,6 +25,7 @@ const Profile = () => {
         image: null
     });
 
+    // Initialize user data from auth context
     useEffect(() => {
         if (user) {
             setUserData({
@@ -34,19 +35,64 @@ const Profile = () => {
         }
     }, [user]);
 
-    const pickImage = async () => {
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'], 
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 0.5,
-        });
+    /**
+     * Function to handle Image Selection logic
+     * Shows an alert to choose between Camera and Gallery
+     */
+    const handleImagePickSource = () => {
+        Alert.alert(
+            "Profile Photo",
+            "Choose a source for your profile picture",
+            [
+                { text: "Take Photo", onPress: () => pickImage(true) },
+                { text: "Choose from Gallery", onPress: () => pickImage(false) },
+                { text: "Cancel", style: "cancel" }
+            ]
+        );
+    };
 
-        if (!result.canceled) {
-            setUserData({ ...userData, image: result.assets[0] });
+    /**
+     * Core logic to pick image using Expo Image Picker
+     * @param useCamera - boolean to determine if camera or library should be used
+     */
+    const pickImage = async (useCamera: boolean) => {
+        try {
+            let result;
+            
+            if (useCamera) {
+                // Request camera permissions
+                const { status } = await ImagePicker.requestCameraPermissionsAsync();
+                if (status !== 'granted') {
+                    setAlertConfig({ title: "Permission Denied", msg: "Camera access is required to take photos.", type: "error" });
+                    setSaveAlertVisible(true);
+                    return;
+                }
+                
+                // Launch Mobile Camera
+                result = await ImagePicker.launchCameraAsync({
+                    allowsEditing: true,
+                    aspect: [1, 1],
+                    quality: 0.5,
+                });
+            } else {
+                // Launch Image Gallery
+                result = await ImagePicker.launchImageLibraryAsync({
+                    mediaTypes: ['images'], 
+                    allowsEditing: true,
+                    aspect: [1, 1],
+                    quality: 0.5,
+                });
+            }
+
+            if (!result.canceled) {
+                setUserData({ ...userData, image: result.assets[0] });
+            }
+        } catch (error) {
+            console.error("Error picking image:", error);
         }
     };
 
+    // Save profile data to Cloudinary and Database
     const handleSaveProfile = async () => {
         if (!userData.name.trim()) {
             setAlertConfig({ title: "Error", msg: "Name cannot be empty", type: "error" });
@@ -59,6 +105,7 @@ const Profile = () => {
             const { name, image } = userData;
             let finalImageUrl = user?.photoURL;
 
+            // If a new image was picked (object with uri), upload to Cloudinary
             if (image && typeof image === 'object' && image.uri) {
                 const uploadResp = await uploadFileToCloudinary(image, "profiles");
                 if (uploadResp.success) {
@@ -71,6 +118,7 @@ const Profile = () => {
                 }
             }
 
+            // Update user record in database
             const resp = await updateUser(user?.uid as string, {
                 displayName: name,
                 photoURL: finalImageUrl
@@ -92,6 +140,7 @@ const Profile = () => {
         }
     };
 
+    // Logout logic
     const onLogout = async () => {
         setLogoutAlertVisible(false);
         try {
@@ -149,22 +198,22 @@ const Profile = () => {
             </Modal>
 
             <View className="flex-1 bg-blue-50 bottom-16" >
-                {/* Header Section */}
+                {/* Header Gradient Background */}
                 <View className="relative">
-                    <View className="h-36 bg-gradient-to-br from-indigo-600 to-purple-600">
+                    <View className="h-36">
                         <LinearGradient colors={['#4F46E5', '#7C3AED']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} className="h-full w-full" />
                     </View>
 
-                    {/* Profile Image */}
+                    {/* Profile Image with Camera Trigger */}
                     <View className="items-center -mt-16 px-6">
-                        <TouchableOpacity onPress={isEditing ? pickImage : undefined} disabled={loading} activeOpacity={isEditing ? 0.7 : 1}>
+                        <TouchableOpacity onPress={isEditing ? handleImagePickSource : undefined} disabled={loading} activeOpacity={isEditing ? 0.7 : 1}>
                             <View className="relative">
                                 <View className="bg-white p-1.5 rounded-full shadow-lg">
                                     <Image source={getProfileImage(userData.image)} className="w-32 h-32 rounded-full bg-gray-200" />
                                 </View>
                                 {isEditing && (
                                     <View className="absolute bottom-1 right-1 bg-indigo-600 rounded-full p-3 border-4 border-white shadow-lg">
-                                        <Text style={{ fontSize: 16 }}>📷</Text>
+                                        <Ionicons name="camera" size={20} color="white" />
                                     </View>
                                 )}
                             </View>
@@ -184,7 +233,7 @@ const Profile = () => {
                                 <Text className="text-3xl font-bold text-gray-900 mb-1">{userData.name || "No Name"}</Text>
                             )}
                             <View className="flex-row items-center bg-gray-100 px-4 py-2 rounded-full mt-2">
-                                <Text className="text-sm">✉️</Text>
+                                <Feather name="mail" size={14} color="#4B5563" />
                                 <Text className="text-gray-600 ml-2 font-medium">{user?.email}</Text>
                             </View>
                         </View>
@@ -202,8 +251,8 @@ const Profile = () => {
                             <ActivityIndicator color="#fff" />
                         ) : (
                             <View className="flex-row items-center justify-center">
-                                <Text className="text-2xl mr-2">{isEditing ? "💾" : "✏️"}</Text>
-                                <Text className="text-white font-bold text-base">{isEditing ? "Save Profile" : "Edit Profile"}</Text>
+                                <Feather name={isEditing ? "save" : "edit-3"} size={20} color="white" className="mr-2" />
+                                <Text className="text-white font-bold text-base ml-2">{isEditing ? "Save Profile" : "Edit Profile"}</Text>
                             </View>
                         )}
                     </TouchableOpacity>
@@ -214,7 +263,7 @@ const Profile = () => {
                         </TouchableOpacity>
                     )}
 
-                    {/* Info Card */}
+                    {/* Static Account Information */}
                     <View className="bg-white rounded-3xl p-6 mb-6 shadow-md border border-gray-100">
                         <Text className="text-gray-900 font-bold text-lg mb-5">👤 Account Information</Text>
                         <View className="bg-gray-50 rounded-2xl p-4 mb-3">
@@ -227,7 +276,7 @@ const Profile = () => {
                         </View>
                     </View>
 
-                    {/* Settings Actions */}
+                    {/* Settings Links */}
                     <View className="mx-0 gap-2">
                         <TouchableOpacity className="bg-white rounded-2xl p-4 flex-row items-center justify-between shadow-sm">
                             <View className="flex-row items-center">
@@ -245,7 +294,7 @@ const Profile = () => {
                         </TouchableOpacity>
                     </View>
 
-                    {/* Logout Trigger */}
+                    {/* Logout Button */}
                     <View className="mt-8 mb-12">
                         <TouchableOpacity 
                             className="bg-red-500 p-4 rounded-2xl flex-row items-center justify-center shadow-md"
