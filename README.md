@@ -14,15 +14,21 @@ The **Queue Management App** is built to solve the common problem of long, unorg
 | --- | --- | --- |
 | <img src="./assets/screenshots/welcome.jpg" width="200" /> | <img src="./assets/screenshots/login.jpg" width="200" /> | <img src="./assets/screenshots/register.jpg" width="200" /> |
 
+### 📊 Home & Profile 
+
+| Home Screen | Profile |
+| --- | --- |
+| <img src="./assets/screenshots/home.jpg" width="200" /> | <img src="./assets/screenshots/profile.jpg" width="200" /> |
+
 ### 🎫 Token Generation Flow
 
-| Home Screen | Add Token | Service Center |
-| --- | --- | --- |
-| <img src="./assets/screenshots/home.jpg" width="200" /> | <img src="./assets/screenshots/addToken.jpg" width="200" /> | <img src="./assets/screenshots/service_center.jpg" width="200" /> |
+| Add Token | Service Center |
+| --- | --- |
+| <img src="./assets/screenshots/addToken.jpg" width="200" /> | <img src="./assets/screenshots/selecting_service_center.jpg" width="200" /> |
 
 | Select Service | Generated Token |
 | --- | --- |
-| <img src="./assets/screenshots/selecting_service.jpg" width="200" /> | <img src="./assets/screenshots/generated_token.jpg" width="200" /> |
+| <img src="./assets/screenshots/selecting_service.jpg" width="200" /> | <img src="./assets/screenshots/ganarated_token.jpg" width="200" /> |
 
 ### 📊 Token Management
 
