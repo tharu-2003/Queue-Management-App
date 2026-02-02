@@ -6,6 +6,10 @@ A modern, real-time solution designed to streamline customer flow and eliminate 
 
 The **Queue Management App** is built to solve the common problem of long, unorganized physical queues in banks, hospitals, and service centers. It provides a virtual queuing environment where users can join a line and track their status in real-time.
 
+## 📥 App Download (APK)
+The Android APK is available via GitHub Releases.
+👉 **[Download ServiceCenters APK](https://github.com/tharu-2003/Queue-Management-App/releases)**
+
 ## 📸 App Screenshots
 
 ### 🔑 Authentication & Onboarding
