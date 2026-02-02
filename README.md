@@ -6,6 +6,31 @@ A modern, real-time solution designed to streamline customer flow and eliminate 
 
 The **Queue Management App** is built to solve the common problem of long, unorganized physical queues in banks, hospitals, and service centers. It provides a virtual queuing environment where users can join a line and track their status in real-time.
 
+## 📸 App Screenshots
+
+### 🔑 Authentication & Onboarding
+
+| Welcome Screen | Login | Register |
+| --- | --- | --- |
+| <img src="./assets/screenshots/welcome.jpg" width="200" /> | <img src="./assets/screenshots/login.jpg" width="200" /> | <img src="./assets/screenshots/register.jpg" width="200" /> |
+
+### 🎫 Token Generation Flow
+
+| Home Screen | Add Token | Service Center |
+| --- | --- | --- |
+| <img src="./assets/screenshots/home.jpg" width="200" /> | <img src="./assets/screenshots/addToken.jpg" width="200" /> | <img src="./assets/screenshots/service_center.jpg" width="200" /> |
+
+| Select Service | Generated Token |
+| --- | --- |
+| <img src="./assets/screenshots/selecting_service.jpg" width="200" /> | <img src="./assets/screenshots/generated_token.jpg" width="200" /> |
+
+### 📊 Token Management
+
+| Active Tokens | Token History |
+| --- | --- |
+| <img src="./assets/screenshots/active_tokens.jpg" width="200" /> | <img src="./assets/screenshots/token_history.jpg" width="200" /> |
+
+
 ## ✨ Key Features
 
 * **Virtual Check-in:** Join the queue remotely without standing in a physical line.
