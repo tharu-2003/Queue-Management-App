@@ -22,13 +22,9 @@ The **Queue Management App** is built to solve the common problem of long, unorg
 
 ### 🎫 Token Generation Flow
 
-| Add Token | Service Center |
-| --- | --- |
-| <img src="./assets/screenshots/addToken.jpg" width="200" /> | <img src="./assets/screenshots/selecting_service_center.jpg" width="200" /> |
-
-| Select Service | Generated Token |
-| --- | --- |
-| <img src="./assets/screenshots/selecting_service.jpg" width="200" /> | <img src="./assets/screenshots/ganarated_token.jpg" width="200" /> |
+| Add Token | Service Center | Select Service | Generated Token |
+| --- | --- | --- | --- |
+| <img src="./assets/screenshots/addToken.jpg" width="200" /> | <img src="./assets/screenshots/selecting_service_center.jpg" width="200" /> | <img src="./assets/screenshots/selecting_service.jpg" width="200" /> | <img src="./assets/screenshots/ganarated_token.jpg" width="200" /> |
 
 ### 📊 Token Management
 
