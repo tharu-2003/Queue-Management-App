@@ -12,6 +12,7 @@ const App = () => {
     if (loading) {
         return (
           <View className="flex-1 justify-center items-center">
+            {/* ActivityIndicator කියන්නේ mobile වල තියෙන කැරකෙන loading icon එක */}
             <ActivityIndicator size={"large"} color={"#4ade80"}/>
           </View>
         )

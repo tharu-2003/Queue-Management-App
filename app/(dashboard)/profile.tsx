@@ -11,9 +11,10 @@ import { Feather, Ionicons } from "@expo/vector-icons";
 
 const Profile = () => {
     const router = useRouter()
+    const [loading, setLoading] = useState(false);
+    
     const { user, setUser } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
-    const [loading, setLoading] = useState(false);
     
     // --- Custom Modal States ---
     const [saveAlertVisible, setSaveAlertVisible] = useState(false);
